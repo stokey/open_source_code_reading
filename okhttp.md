@@ -14,6 +14,7 @@
 + 框架简单用法
 
 ```java
+OkHttpClient client = new OkHttpClient();
 OkHttpClient eagerClient = client.newBulider()
 	.readTimeout(500,TimeUnit.MILLISECONDS)
 	.build();
@@ -226,9 +227,8 @@ Response response = eagerClient.newCall(request).execute();
       				}
       				request = followUp;
       				priorResponse = response;
-    }
-    ```
-    
+    			}
+    			```
     
     + BridgeInterceptor
     	+ 核心成员
@@ -295,7 +295,7 @@ Response response = eagerClient.newCall(request).execute();
         + NetworkInterceptors:OkHttp配置
         + CallServerInterceptor：真正执行网络请求，发送和读取数据
         	+ 核心类
-        		+ BufferedSink
+        		+ BufferedSink：okio类库中的类
         		+ RequestBody  
         	+ 核心方法：intercept(Chain chain)->Response
         		+ 发送请求
