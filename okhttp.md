@@ -331,11 +331,12 @@ Response response = eagerClient.newCall(request).execute();
         		``` 
         		
  + OkHttp流程图说明
-![img](./images/okhttp_flow_chart.png)    		
+![img](./images/okhttp_flow_chart.png)    	
         		
 ## 深入分析
 + [ ] 底层数据传输实现方式（Socket）
 + [ ] 关于请求和响应的封装
 + [ ] 缓存机制  
 + [ ] 拦截器的责任链实现方式
-+ [ ] 数据初始化的建造者模式实现方式         		
++ [ ] 数据初始化的建造者模式实现方式 
+	+ OkHttpClient类／Builder类     		
