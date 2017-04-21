@@ -23,6 +23,8 @@ Response response = eagerClient.newCall(request).execute();
 	
 + 分析出两个核心类：`OkHttpClient`,`Response`，一个设计模式：`建造者模式`
 	+ OkHttpClinet
+		+ 类图说明
+![img](./images/okhttpclient_uml.png) 
 		+ 实现了三个接口——`Cloneable`,`Call.Factory`,`WebSocket.Factory` 
 			+ 实现Cloneable接口用于实现clone方法实现快速复制对象
 		+ 核心类
@@ -57,7 +59,9 @@ Response response = eagerClient.newCall(request).execute();
 			+ newBuilder()->okhttp.Builder
 			+ newCall(Request request)->Call 
 			+ newWebSocket(Request request, WebSocketListener listener)->RealWeSocket
-	+ RealCall 
+	+ RealCall
+		+ 类图说明
+![img](./images/okhttp_realcall_uml.png) 
 		+ 核心类
 			+ Dispatcher：管理任务队列
 			+ AsyncCall：final class(内部类)，处理异步请求 
@@ -85,6 +89,8 @@ Response response = eagerClient.newCall(request).execute();
 		+ 核心方法
 			+ execute()->void: `getResponseWithInterceptorChain() -> responseCallback.onFailure()/responseCallback.onResponse() -> Dispatcher.finish()`    
 	+ Dispatcher：管理任务队列
+		+ 类图说明
+	![img](./images/okhttp_dispatcher_uml.png) 
 		+ 核心类
 			+ Interceptor
 			+ Interceptor。Chain	  
@@ -137,6 +143,8 @@ Response response = eagerClient.newCall(request).execute();
 		    	```
 		    	
 	+ Interceptor：拦截器抽象接口
+		+ 类图说明
+![img] (./images/okhttp_interceptor_uml.png) 
 		+ interface Chain
 			+ request()->Request
 			+ proceed(Request request)->Response
@@ -321,6 +329,9 @@ Response response = eagerClient.newCall(request).execute();
         		responseBuilder = httpCodec.readResponseHeaders(true);
         		Response response = responseBuilder.request(request).handshake(streamAllocation.connection().handshake()).sentRequestAtMillis(sentRequestMillis).receivedResponseAtMillis(System.currentTimeMillis()).build();
         		``` 
+        		
+ + OkHttp流程图说明
+![img](./images/okhttp_flow_chart.png)    		
         		
 ## 深入分析
 + [ ] 底层数据传输实现方式（Socket）
