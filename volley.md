@@ -41,9 +41,21 @@
 		+ JsonObjectRequest
 		+ JsonArrayRequest
 	+ ImageRequest
-+ Response类    
++ Response类
++ ResponseDelivery类
+	+ ExecutorDelivery
+		+ ImmediateResponseDelivery
+	+ MockResponseDelivery  
++ Network类
+	+ BasicNetwork
+	+ MockNetwork
++ HttpStack类
+	+ HttpClientStack
+	+ HurlStack
+	+ MockHttpStack  
  
 ## 流程图
+![img](./images/volley/volley_flow_chart.png)
 ## 详细解析
 + Volley类解析
 	+ 类图说明
@@ -161,14 +173,20 @@
 		+ 类图说明
 ![img](./images/volley/volley_network_uml.png) 
 		+ 核心属性／方法说明
+		+ 实现类
+			+ BasicNetwork类解析
+			+ MockNetwork类解析  
 	+ Dispatcher机制
 		+ 类图说明
 ![img](./images/volley/volley_dispatcher_uml.png) 
+		+ 核心属性／方法说明
 		+ 实现类
 			+ NetworkDispatcher类解析
 			+ CacheDispatcher类解析  
 	+ HttpStack类解析
 		+ 类图说明
+![img](./images/volley/volley_httpstack_uml.png)
+		+ 核心属性／方法说明
 		+ 实现类 
 			+ HurlStack类解析
 			+ HttpClientStack类解析 
