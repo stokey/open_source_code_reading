@@ -93,7 +93,7 @@
 ![img](./images/volley/volley_request_queue_uml.png)
 		
 		+ 核心属性／方法说明
-			+ DEFAULT_NETWORK_THREAD_POOL_SIZE：网络请求线程池大小，默认值为4
+			+ DEFAULT_ NETWORK _ THREAD _ POOL _ SIZE：网络请求线程池大小，默认值为4
 			+ 两种处理机制
 				+ Cache：缓存机制
 					+ Cache cache：通过缓存文件处理响应
@@ -173,9 +173,26 @@
 		+ 类图说明
 ![img](./images/volley/volley_network_uml.png) 
 		+ 核心属性／方法说明
+			+ performRequest(Request<?> request):`执行请求方法，返回NetworkResponse`
 		+ 实现类
-			+ BasicNetwork类解析
-			+ MockNetwork类解析  
+			+ BasicNetwork类解析：`处理Http网络请求类`
+				+  核心属性／方法说明
+					+ 核心属性  
+						+ DEFAULT_POOL_SIZE：`默认缓存池大小，默认值为4096 byte`	  
+						+ SLOW_REQUEST_THRESHOLD_MS：`网络请求日志打印的间隔时间，默认3000 ms`
+						+ HttpStack mHttpStack：`Volley类带过来的HttpStack client，最终执行网络请求的类`
+						+ ByteArrayPool mPool：缓存池大小
+					+ 核心方法
+						+ performRequest(Request<?> request)：`返回值NetworkResponse，HttpStack执行performRequest()方法获取HttpResponse,再将HttpResponse封装成NetworkResponse对象进行返回，或者调用重试方法进行重试，或者返回异常`
+							+ 流程图
+![img](./images/volley/volley_basic_network_flow_chart.png)
+						
+						+ addCacheHeaders(Map<String, String> headers, Cache.Entry entry)：`添加[If-None-Match/If-Modified-Since]字段到请求头`
+						+  convertHeaders(Header[] headers)：`返回值为Map<String,String>类型，把响应头信息转换成Map<String,String>`
+						+  entityToBytes(HttpEntity entity)：`放回值byte[]，将HttpEntity 转换成byte[]`
+						+  logSlowRequests(long requestLifetime, Request<?> request,byte[] responseContents, StatusLine statusLine)：`打印请求信息`
+						+  attemptRetryOnException(String logPrefix, Request<?> request,VolleyError exception)：`尝试重试请求——request.addMarker`
+			+ MockNetwork类解析：`用于Http网络请求测试类` 
 	+ Dispatcher机制
 		+ 类图说明
 ![img](./images/volley/volley_dispatcher_uml.png) 
@@ -193,3 +210,7 @@
 			+ MockHttpStack类解析
 		
 ## 深入解析
++ Volley范型机制
++ HttpClient/HttpURLConnection封装技巧
++ Response消息传递机制
++ Cache机制
