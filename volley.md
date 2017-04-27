@@ -105,16 +105,16 @@
 					+ Network mNetwork：通过请求网络处理响应
 					+ PriorityBlockingQueue<Request<?>> mNetworkQueue 
 					+ NetworkDispatcher[] mDispatchers
-			+ start()方法：启动队列中的dispatchers。[dispatcher会调用start方法]
+			+ start()方法：启动队列中的dispatchers[dispatcher会调用start方法]
 			
 			```java
 			public void start() {
 				stop();  // Make sure any currently running dispatchers are stopped.
-        			// Create the cache dispatcher and start it.
-        			mCacheDispatcher = new CacheDispatcher(mCacheQueue, mNetworkQueue, mCache, mDelivery);
-        			mCacheDispatcher.start();
-        			// Create network dispatchers (and corresponding threads) up to the pool size.
-        			// mDispatchers  = new NetworkDispatcher[threadPoolSize];
+				// Create the cache dispatcher and start it.
+				mCacheDispatcher = new CacheDispatcher(mCacheQueue, mNetworkQueue, mCache, mDelivery);
+				mCacheDispatcher.start();
+				// Create network dispatchers (and corresponding threads) up to the pool size.
+				// mDispatchers  = new NetworkDispatcher[threadPoolSize];
         		for (int i = 0; i < mDispatchers.length; i++) {
         			NetworkDispatcher networkDispatcher = new NetworkDispatcher(mNetworkQueue, mNetwork,mCache, mDelivery);
         			mDispatchers[i] = networkDispatcher;
