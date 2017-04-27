@@ -67,26 +67,28 @@
 		+ HttpClientStack
 		+ DiskBasedCache 
 	+ 核心方法／属性 
-		+ 属性`DEFAULT_CACHE_DIR`：磁盘缓存默认文件夹
-		+ 方法
-			+ newRequestQueue(Context,HttpStack):RequestQueue
+		+ 核心属性
+			+ DEFAULT_CACHE_DIR：`磁盘缓存默认文件夹`
+		+ 核心方法
+			+ newRequestQueue(Context,HttpStack)->RequestQueue
 				+ 创建默认RequestQueue工作池/缓存目录
 				+ 决定底层Network方式：`Android 2.3及其以上采用HurlStack方式通信——HttpURLConnection，以下采用HttpClientStack方式通信——HttpClient`
 				
-				```java
-			// 此处可以通过自定义HttpStack决定，底层http客户端通信方式【volley+okhttp】
-			if (stack == null) {
-				if (Build.VERSION.SDK_INT >= 9) {
-					stack = new HurlStack();} else {
-                	// Prior to Gingerbread, HttpUrlConnection was unreliable.
-                	// See: http://android-developers.blogspot.com/2011/09/androids-http-clients.html
-                	stack = new HttpClientStack(AndroidHttpClient.newInstance(userAgent));
-                	}
-        }
-        Network network = new BasicNetwork(stack);
-        RequestQueue queue = new RequestQueue(new DiskBasedCache(cacheDir), network);
-        queue.start();
-				```
+					```java
+					// 此处可以通过自定义HttpStack决定，底层http客户端通信方式——volley+okhttp
+					if (stack == null) {
+						if (Build.VERSION.SDK_INT >= 9) {
+							// HttpClient
+							stack = new HurlStack();
+						} else{
+							// HttpUrlConnection
+							stack = new HttpClientStack(AndroidHttpClient.newInstance(userAgent));
+						}
+					}
+					Network network = new BasicNetwork(stack);
+					RequestQueue queue = new RequestQueue(new DiskBasedCache(cacheDir), network);
+					queue.start();
+					```
 	
 	+ RequestQueue类解析
 		+ 类图说明
@@ -173,7 +175,7 @@
 		+ 类图说明
 ![img](./images/volley/volley_network_uml.png) 
 		+ 核心属性／方法说明
-			+ performRequest(Request<?> request):`执行请求方法，返回NetworkResponse`
+			+ performRequest(Request<?> request)：`执行请求方法，返回NetworkResponse`
 		+ 实现类
 			+ BasicNetwork类解析：`处理Http网络请求类`
 				+  核心属性／方法说明
@@ -191,15 +193,30 @@
 						+  convertHeaders(Header[] headers)：`返回值为Map<String,String>类型，把响应头信息转换成Map<String,String>`
 						+  entityToBytes(HttpEntity entity)：`放回值byte[]，将HttpEntity 转换成byte[]`
 						+  logSlowRequests(long requestLifetime, Request<?> request,byte[] responseContents, StatusLine statusLine)：`打印请求信息`
-						+  attemptRetryOnException(String logPrefix, Request<?> request,VolleyError exception)：`尝试重试请求——request.addMarker`
+						+  attemptRetryOnException(String logPrefix, Request<?> request,VolleyError exception)：`尝试重试请求——request.addMarker，performRequest()方法一直轮询，如果不返回或者异常则会一直请求`
+							+ BasicNetwork异常处理机制流程图
+![img](./images/volley/volley_basic_network_exception_flow_chart.png)  
 			+ MockNetwork类解析：`用于Http网络请求测试类` 
 	+ Dispatcher机制
 		+ 类图说明
 ![img](./images/volley/volley_dispatcher_uml.png) 
-		+ 核心属性／方法说明
 		+ 实现类
 			+ NetworkDispatcher类解析
-			+ CacheDispatcher类解析  
+				+ 核心属性／方法说明 
+			+ CacheDispatcher类解析
+				+ 类说明：`处理响应请求缓存类，Thread子类，在RequestQueue类中的start()方法中调用CacheDispatcher的start()方法执行轮询操作` 
+				+ 核心属性／方法说明 
+					+ 核心属性
+						+ BlockingQueue<Request<?>> mCacheQueue：`请求的缓存队列`
+						+ BlockingQueue<Request<?>> mNetworkQueue：`网络请求队列，和NetworkDispatcher共享，RequestQueue类中start()方法传入` 
+						+ Cache mCache：`用于写入和读取缓存的类`
+						+ ResponseDelivery mDelivery：`用于处理响应的类`
+						+ boolean mQuit：`判断是否结束的标志，默认值false`
+					+  核心方法
+						+ quit()：`结束缓存，mQuit=true同时调用Thread.interrupt()方法退出线程`
+						+ run()：`处理请求，读取缓存，写入缓存`
+							+ 流程图 
+![img](./images/volley/volley_cache_dispatcher_run_flow_chart.png)
 	+ HttpStack类解析
 		+ 类图说明
 ![img](./images/volley/volley_httpstack_uml.png)
