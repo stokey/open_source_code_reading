@@ -202,7 +202,20 @@
 ![img](./images/volley/volley_dispatcher_uml.png) 
 		+ 实现类
 			+ NetworkDispatcher类解析
+				+ 类说明：`处理网络请求类，Thread子类。在RequestQueue类中默认开辟四条线程，同时处理mNetworkQueue中的请求队列` 
 				+ 核心属性／方法说明 
+					+ 核心属性
+						+ BlockingQueue<Request<?>> mQueue：`网络请求队列，RequestQueue类中start()方法传入` 
+						+ Cache mCache：`用于写入和读取缓存的类`
+						+ ResponseDelivery mDelivery：`用于处理响应的类`
+						+ boolean mQuit：`判断是否结束的标志，默认值false`
+						+ Network mNetwork：`实际处理http请求的实体类`
+					+ 核心方法 
+						+ parseAndDeliverNetworkError()：`将异常封装后作为响应结果返回`
+						+ quit()：`结束操作，设置mQuit=true同时调用Thread.interrupt()方法退出线程`
+						+ run()：`处理网络请求，获取响应，处理响应缓存` 
+							+ 流程图
+![img](./images/volley/volley_network_dispatcher_run_flow_chart.png)
 			+ CacheDispatcher类解析
 				+ 类说明：`处理响应请求缓存类，Thread子类，在RequestQueue类中的start()方法中调用CacheDispatcher的start()方法执行轮询操作` 
 				+ 核心属性／方法说明 
@@ -213,21 +226,30 @@
 						+ ResponseDelivery mDelivery：`用于处理响应的类`
 						+ boolean mQuit：`判断是否结束的标志，默认值false`
 					+  核心方法
-						+ quit()：`结束缓存，mQuit=true同时调用Thread.interrupt()方法退出线程`
+						+ quit()：`结束操作，设置mQuit=true同时调用Thread.interrupt()方法退出线程`
 						+ run()：`处理请求，读取缓存，写入缓存`
 							+ 流程图 
 ![img](./images/volley/volley_cache_dispatcher_run_flow_chart.png)
 	+ HttpStack类解析
 		+ 类图说明
 ![img](./images/volley/volley_httpstack_uml.png)
-		+ 核心属性／方法说明
+		+ 核心方法说明
+			+ performRequest(Request<?> request, Map<String, String> additionalHeaders)->HttpResponse：`发起请求，获取响应的抽象方法` 
 		+ 实现类 
-			+ HurlStack类解析
-			+ HttpClientStack类解析 
-			+ MockHttpStack类解析
+			+ MockHttpStack类解析：`用于测试的测试类`
+			+ HurlStack类解析：`底层封装的是HttpURLConnection，适用于Android 2.3及其以上版本`
+			+ HttpClientStack类解析：`底层封装的是HttpClient，适用于Android 2.3以下版本`
 		
 ## 深入解析
 + Volley范型机制
+	+ 范型类 
+		+ Request<T>
+			+ JsonRequest<T>
+				+ JsonObjectRequest(`extends JsonRequest<JSONObject>`) 
+				+ JsonArrayRequest(`extends JsonRequest<JSONArray>`) 
+			+ ImageRequest(`extends Request<Bitmap>`)
+			+ StringRequest(`extends Request<String>`) 
+		+ Response<T> 
 + HttpClient/HttpURLConnection封装技巧
 + Response消息传递机制
 + Cache机制
