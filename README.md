@@ -6,7 +6,7 @@
 	+ [ ] Refrofit 
 + 图片类
 	+ [ ] ImageLoader  
-	+ [ ] Picass
+	+ [ ] Picasso
 + 自定义View类库
 	+ [ ] SlidingMenu
 	+ [ ] android-Ultra-Pull-To-Refresh

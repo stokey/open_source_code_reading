@@ -2,7 +2,7 @@
 
 ## 目标
 + [X] 了解功能，学会用法
-+ [ ] 了解框架设计核心思想及相关技术点  
++ [X] 了解框架设计核心思想及相关技术点  
 
 ## 阅读路径
 1. 使用方式入手
@@ -239,7 +239,186 @@
 			+ MockHttpStack类解析：`用于测试的测试类`
 			+ HurlStack类解析：`底层封装的是HttpURLConnection，适用于Android 2.3及其以上版本`
 			+ HttpClientStack类解析：`底层封装的是HttpClient，适用于Android 2.3以下版本`
-		
+	+ Response类解析：`响应范型类`
+		+ 类图说明
+![img](./images/volley/volley_response_uml.png)
+		+ 核心属性／方法说明
+			+ 核心属性
+				+ T result：`响应结果，范型类型，可能是String/Json/Bitmap`
+				+ Cache.Entry cacheEntry：`用于处理响应的缓存对象`
+				+ VolleyError error：`响应异常信息，如果响应正常则为null`
+				+ boolean intermediate：`如果设为true，第一次响应默认过期响应，第二次响应会触发返回。相当于返回的响应请求过期，然后调动二次请求进行响应`
+			+ 核心方法 
+				+ isSuccess()：`判断响应是否成功，error == null`
+				+ success(T result,Cache.Entry cacheEntry)->Respnse<T>：`把响应结果T result封装成Response<T>对象进行返回` 
+				+ error(Volley error)->Response<T>：`将响应错误封装成Response<T>对象进行返回`
+				
+	+ ResponseDelivery类解析：`将响应传递出去的接口`
+		+ 类图说明
+![img](./images/volley/volley_response_delivery_uml.png)
+		+ 核心方法说明
+			+ postResponse()：`将响应信息发送给请求`
+			+ postError()：`将错误信息发送给请求` 
+		+ 实现类
+			+ ExecutorDelivery
+				+ 内部类
+					+ ResponseDeliveryRunnable：`Runnable子类，用于异步处理响应信息`
+					+ 核心方法解析
+						+ run()方法流程图
+![img](./images/volley/volley_response_delivery_runable_run_flow_chart.png)   
+				+ 核心属性／方法说明
+					+ 核心属性
+						+ Executor mResponsePoster：`处理响应信息的执行器，最终通过传递过来的handler通过post()方法将ResponseDeliveryRunnable对象传递出去`  
+					+ 核心方法
+						+ postResponse()：`传递响应结果方法`
+						+ postError()：`传递响应错误方法`
+				+ Response消息传递流程图
+![img](./images/volley/volley_response_flow_chart.png) 
+				+ 继承类 
+					+ ImmediateResponseDelivery
+					
+					```java
+					public ImmediateResponseDelivery() {
+						super(new Executor() {
+							@Override
+							public void execute(Runnable command) {
+								command.run();
+							}
+						});
+					}
+					```  
+			+ MockResponseDelivery：`用于测试，MOCK HTTP`
+	+ Request类解析
+		+ 类图说明
+![img](./images/volley/volley_request_uml.png)
+		+ 核心属性／方法说明
+		+ 实现类
+			+ StringRequest
+				+ 核心属性／方法说明
+					+ 核心属性
+						+ Listener<String> mListener：`用于监听正确响应的监听器` 
+					+ 核心方法
+						+ deliverResponse()：`调用监听的响应方法，实现回调`
+
+						```java
+						@Override
+						protected void deliverResponse(String response) {
+							if (mListener != null) {
+								mListener.onResponse(response);
+							}
+						}
+						```
+						
+						+ parseNetworkResponse()：`将NetworkResponse转换成Response<String>对象` 
+						
+						```java
+						@Override
+						protected Response<String> parseNetworkResponse(NetworkResponse response) {
+							String parsed;
+							try {
+								parsed = new String(response.data,HttpHeaderParser.parseCharset(response.headers));
+							} catch (UnsupportedEncodingException e) {
+								parsed = new String(response.data);
+							}
+							return Response.success(parsed, HttpHeaderParser.parseCacheHeaders(response));
+						}
+						```
+						
+			+ JsonRequest<T>
+				+ 类图说明
+![img](./images/volley/volley_json_request_uml.png)
+				+ 核心属性／核心方法说明
+				+ 继承类 
+					+ JsonObjectRequest
+						+ 核心方法说明
+							+ parseNetworkResponse()：`将NetworkResponse转换成Response<JSONObject对象`
+							
+							```java
+							@Override
+							protected Response<JSONObject> parseNetworkResponse(NetworkResponse response) {
+							try {
+								String jsonString = new String(response.data,HttpHeaderParser.parseCharset(response.headers, PROTOCOL_CHARSET));
+								return Response.success(new JSONObject(jsonString),HttpHeaderParser.parseCacheHeaders(response));
+							} catch (UnsupportedEncodingException e) {
+									return Response.error(new ParseError(e));
+							} catch (JSONException je) {
+									return Response.error(new ParseError(je));
+								}
+							}
+							```
+					
+					+ JsonArrayRequest
+						+ 核心方法说明
+							+ parseNetworkResponse()：`将NetworkResponse转换成Response<JSONArray>对象`
+							
+							```java
+							@Override
+							protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+								try {
+									String jsonString = new String(response.data,HttpHeaderParser.parseCharset(response.headers, PROTOCOL_CHARSET));
+									return Response.success(new JSONArray(jsonString),HttpHeaderParser.parseCacheHeaders(response));
+								} catch (UnsupportedEncodingException e) {
+									return Response.error(new ParseError(e));
+								} catch (JSONException je) {
+									return Response.error(new ParseError(je));
+								}
+							}
+							```
+							
+			+ ImageRequest
+				+ 核心属性／方法
+					+ 核心属性
+					+ 核心方法
+						+ doParse()：`将NetworkResponse转换成Response<Bitmap>对象`
+						
+						```java
+						private Response<Bitmap> doParse(NetworkResponse response) {
+							byte[] data = response.data;
+							BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
+							Bitmap bitmap = null;
+							if (mMaxWidth == 0 && mMaxHeight == 0) {
+								decodeOptions.inPreferredConfig = mDecodeConfig;
+								bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, decodeOptions);
+							} else {
+								 // If we have to resize this image, first get the natural bounds.
+								decodeOptions.inJustDecodeBounds = true;
+								BitmapFactory.decodeByteArray(data,0,data.length,decodeOptions);
+								int actualWidth = decodeOptions.outWidth;
+								int actualHeight = decodeOptions.outHeight;
+								// Then compute the dimensions we would ideally like to decode to.
+								int desiredWidth = getResizedDimension(mMaxWidth, mMaxHeight,actualWidth, actualHeight, mScaleType);
+								int desiredHeight = getResizedDimension(mMaxHeight, mMaxWidth,actualHeight, actualWidth, mScaleType);
+								// Decode to the nearest power of two scaling factor.
+								decodeOptions.inJustDecodeBounds = false;
+								// TODO(ficus): Do we need this or is it okay since API 8 doesn't support it?
+								// decodeOptions.inPreferQualityOverSpeed = PREFER_QUALITY_OVER_SPEED;
+								decodeOptions.inSampleSize =findBestSampleSize(actualWidth, actualHeight, desiredWidth, desiredHeight);
+								Bitmap tempBitmap = BitmapFactory.decodeByteArray(data, 0, data.length, decodeOptions);
+								// If necessary, scale down to the maximal acceptable size.
+								if (tempBitmap != null && (tempBitmap.getWidth() > desiredWidth ||tempBitmap.getHeight() > desiredHeight)) {
+									bitmap = Bitmap.createScaledBitmap(tempBitmap,desiredWidth, desiredHeight, true);
+									tempBitmap.recycle();
+								} else {
+									bitmap = tempBitmap;
+								}
+							}
+							if (bitmap == null) {
+								return Response.error(new ParseError(response));
+							} else {
+								return Response.success(bitmap, HttpHeaderParser.parseCacheHeaders(response));
+							}
+						}
+						```
+						   
+						+ deliverResponse()
+						
+						```java
+						@Override
+						protected void deliverResponse(Bitmap response) {
+							mListener.onResponse(response);
+						}
+						```
+
 ## 深入解析
 + Volley范型机制
 	+ 范型类 
