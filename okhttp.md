@@ -90,10 +90,10 @@ Response response = eagerClient.newCall(request).execute();
 			+ execute()->void: `getResponseWithInterceptorChain() -> responseCallback.onFailure()/responseCallback.onResponse() -> Dispatcher.finish()`    
 	+ Dispatcher：管理任务队列
 		+ 类图说明
-	![img](./images/okhttp/okhttp_dispatcher_uml.png) 
+![img](./images/okhttp/okhttp_dispatcher_uml.png) 
 		+ 核心类
 			+ Interceptor
-			+ Interceptor。Chain	  
+			+ Interceptor.Chain	  
 		+ 核心成员
 			+ maxRequests = 64
 			+ maxRequestsPerHost = 5
