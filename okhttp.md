@@ -20,7 +20,10 @@ OkHttpClient eagerClient = client.newBulider()
 	.build();
 Response response = eagerClient.newCall(request).execute();
 ```
-	
+
++ OkHttp流程图说明
+![img](./images/okhttp/okhttp_flow_chart.png)    	
+
 + 分析出两个核心类：`OkHttpClient`,`Response`，一个设计模式：`建造者模式`
 	+ OkHttpClinet
 		+ 类图说明
@@ -144,7 +147,7 @@ Response response = eagerClient.newCall(request).execute();
 		    	
 	+ Interceptor：拦截器抽象接口
 		+ 类图说明
-![img] (./images/okhttp/okhttp_interceptor_uml.png) 
+![img](./images/okhttp/okhttp_interceptor_uml.png)
 		+ interface Chain
 			+ request()->Request
 			+ proceed(Request request)->Response
@@ -329,9 +332,6 @@ Response response = eagerClient.newCall(request).execute();
         		responseBuilder = httpCodec.readResponseHeaders(true);
         		Response response = responseBuilder.request(request).handshake(streamAllocation.connection().handshake()).sentRequestAtMillis(sentRequestMillis).receivedResponseAtMillis(System.currentTimeMillis()).build();
         		``` 
-        		
- + OkHttp流程图说明
-![img](./images/okhttp/okhttp_flow_chart.png)    	
         		
 ## 深入分析
 + [ ] 底层数据传输实现方式（Socket）
