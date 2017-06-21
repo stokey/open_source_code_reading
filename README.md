@@ -27,3 +27,8 @@
 	+ [ ] RxAndroid ：异步请求框架
 	+ [ ] LeakCannary：内存泄漏框架
 	+ [ ] ACRA：系统崩溃上报框架
+	+ [ ] Butter Knife：代码模版框架
+	+ [ ] ARouter：页面路由框架
+	+ [ ] StatusBarUtil：状态栏框架
+	+ [ ] JsBridge：hybrid框架
+	+ [ ] dexposed：热修复框架
